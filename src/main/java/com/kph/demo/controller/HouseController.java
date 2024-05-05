@@ -5,9 +5,11 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.kph.demo.model.House;
 import com.kph.demo.repository.HouseR2dbcRepository;
+import com.kph.demo.services.KphCallOracleDb;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,9 @@ import java.util.UUID;
 @Slf4j
 public class HouseController {
 
+    @Autowired
+    KphCallOracleDb kphCallOracleDb;
+
     private static final int DELAY_PER_ITEM_MS = 100;
 
     private final HouseR2dbcRepository houseR2dbcRepository;
@@ -37,6 +42,7 @@ public class HouseController {
 
     @GetMapping("/README")
     public ResponseEntity<String> getReadme() {
+
         StringBuilder html = new StringBuilder();
 
         // Start HTML document
@@ -64,11 +70,13 @@ public class HouseController {
                 "Show by pages of House from DB");
         List<String> link4 = List.of("/exportCSV", "GET", 
                 "List all hourse in CSV, also generate a 'houseLines.csv file in the current directory");
+        List<String> link5 = List.of("/querySQL?sql=statement", "GET", 
+                "Query DB using SQL statement");
+        List<String> link6 = List.of("callProcedure?stmt=call statement", "GET", 
+                "Call procedure: syntax Call proc-name(parm1, parm2...etc)");
+                
 
-        List<List<String>> svcList = List.of(link1, 
-                                             link2, 
-                                             link3, 
-                                             link4);
+        List<List<String>> svcList = List.of(link1, link2, link3, link4, link5, link6);
 
         // Populate the table
         for (int i = 0; i < svcList.size(); i++) {
@@ -173,4 +181,23 @@ public class HouseController {
         *****************************/
 
     }
+
+    @GetMapping("/querySQL")
+    public Mono<List<String>> querySQL(@RequestParam(name = "sql") String sqlStmt) {
+
+        log.info("Query using SQL: {}", sqlStmt);
+        return kphCallOracleDb.querySQLGet1st(sqlStmt);
+
+    }
+
+    @GetMapping("/callProcedure")
+    public String callProcedure(@RequestParam(name = "stmt") String callStm) {
+
+        log.info("Call Procedure with parameters from caller: {}", callStm);
+        kphCallOracleDb.callPlSqlProcedure("'Alhambra'", "'Active'");
+        return "done";
+
+    }
+    
+
 }

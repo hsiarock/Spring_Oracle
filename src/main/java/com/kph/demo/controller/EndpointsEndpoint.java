@@ -1,5 +1,7 @@
 package com.kph.demo.controller;
 
+// this class not been used
+
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.web.Link;
