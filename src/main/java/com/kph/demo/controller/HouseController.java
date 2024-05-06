@@ -182,14 +182,18 @@ public class HouseController {
 
     }
 
-    @GetMapping("/querySQL")
+    @GetMapping("/querySQL1st")
     public Mono<List<String>> querySQL(@RequestParam(name = "sql") String sqlStmt) {
 
         log.info("Query using SQL: {}", sqlStmt);
         return kphCallOracleDb.querySQLGet1st(sqlStmt);
-
     }
+    @GetMapping("/querySQL")
+    public Flux<String> querySQLAll(@RequestParam(name = "sql") String sqlStmt) {
 
+        log.info("Query using SQL with whole list: {}", sqlStmt);
+        return kphCallOracleDb.querySQLGetAll(sqlStmt);
+    }
     @GetMapping("/callProcedure")
     public String callProcedure(@RequestParam(name = "stmt") String callStm) {
 

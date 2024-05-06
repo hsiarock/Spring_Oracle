@@ -1,9 +1,11 @@
 package com.kph.demo.services;
 
+import io.r2dbc.spi.ColumnMetadata;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Result;
+import io.r2dbc.spi.RowMetadata;
 import io.r2dbc.spi.Statement;
 import lombok.extern.slf4j.Slf4j;
 
@@ -49,6 +51,65 @@ public class KphCallOracleDb {
 
     }
 
+    public Flux<String> querySQLGetAll(String sqlStmt) {
+        log.info("Query with SQL: {} now", sqlStmt);
+    
+        return Flux.usingWhen(
+                connectionFactory.create(),
+                connection ->
+                        Mono.from(connection.createStatement(sqlStmt).execute()) // Mono<Result>
+                                .flatMapMany(result -> Flux.from(result.map((row, rowMetadata) -> {
+                                    List<String> rowValues = new ArrayList<>();
+                                    for (ColumnMetadata columnMetadata : rowMetadata.getColumnMetadatas()) {
+                                        // Assuming all columns are of type String
+                                        rowValues.add(row.get(columnMetadata.getName(), String.class)); 
+                                    }
+                                    return String.join(", ", rowValues); // Join the values into a single string
+                                })))
+                ,
+                Connection::close);
+    }
+    
+
+    // public Flux<String> querySQLGetAllbbb(String sqlStmt) {
+    //     log.info("Query with SQL: {} now", sqlStmt);
+    
+    //     return Flux.usingWhen(
+    //             connectionFactory.create(),
+    //             connection ->
+    //                     Mono.from(connection.createStatement(sqlStmt).execute()) // Mono<Result>
+    //                             .flatMapMany(result -> Flux.from(result.map(row -> {
+    //                                 RowMetadata metadata = row.getMetadata();
+    //                                 List<String> rowValues = new ArrayList<>();
+    //                                 for (int i = 0; i < metadata.getColumnCount(); i++) {
+    //                                     rowValues.add(row.get(i, String.class)); // Fetch by index
+    //                                 }
+    //                                 return String.join(", ", rowValues); // Join the values into a single string
+    //                             })))
+    //             ,
+    //             Connection::close);
+    // }
+    
+
+    // public Flux<String> querySQLGetAllaaa(String sqlStmt) {
+    //     log.info("Query with SQL: {} now", sqlStmt);
+
+    //     return Flux.usingWhen(
+    //             connectionFactory.create(),
+    //             connection ->
+    //                     Mono.from(connection.createStatement(sqlStmt).execute()) // Mono<Result>
+    //                             .flatMap(result -> result.map(row -> {
+    //                                 RowMetadata metadata = row.getMetadata();
+    //                                 List<String> rowValues = new ArrayList<>();
+    //                                 for (int i = 0; i < metadata.getColumnCount(); i++) {
+    //                                     rowValues.add(row.get(i, String.class)); // Fetch by index
+    //                                 }
+    //                                 return String.join(", ", rowValues); // Join the values into a single string
+    //                             }))
+    //             ,
+    //             Connection::close);
+    // }
+
     // public Flux<String> querySQLGetAll(String sqlStmt) {
                 
     //     log.info("Query with SQL: {} now", sqlStmt);
@@ -58,7 +119,7 @@ public class KphCallOracleDb {
     //             connection ->
     //                 Mono.from(connection.createStatement(sqlStmt).execute()) // Mono<Result>
     //                     //.flatMap(result -> result.map(row -> row.get(0, String.class))) // row.getValues().toString()))
-    //                      .flatMap(result -> result.map(row -> { 
+    //                      .flatMap(result -> result.flatMap(row -> { 
     //                             RowMetadata metadata = row.getMetadata();
     //                             //List<String> columnNames = new ArrayList<>();
     //                             List<String> rowValues = new ArrayList<>();
@@ -67,7 +128,7 @@ public class KphCallOracleDb {
     //                                 //columnNames.add(colName);
     //                                 rowValues.add(row.get(colName, String.class));
     //                             }
-    //                             return rowValues.collectList();
+    //                             return String.join(", ", rowValues);
     //                         }))
     //                 ,
     //             Connection::close)
