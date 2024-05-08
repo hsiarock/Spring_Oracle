@@ -1,13 +1,17 @@
-#!/bin/bash
+#!/bin/sh
+#
+# E:\Oracle\sqlcl\bin
+# sqlcl=/c/WinApp/oracle/sqlcl/bin/sql
+sqlcl=/e/Oracle/sqlcl/bin/sql
+dburl=david/alexgo12@192.168.1.2:1521/XE
 
-p_city=$1
-p_status=$2
-
-sqlcl_script=$(cat <<EOF
-SET SERVEROUTPUT ON;
+sqlcl_script=$(echo "
+SET SERVEROUTPUT ON SIZE 32767;
 DECLARE
   v_count NUMBER := 0;
+  
 BEGIN
+  --DMBS_OUTPUT.ENABLE(buffer_size => NULL);
   LIST_HOUSE_JSON;
   
   DBMS_OUTPUT.PUT_LINE('Count: ' || v_count);
@@ -22,12 +26,6 @@ EXCEPTION
     RAISE; -- Re-raise the exception for further handling
 END;
 /
-EXIT;
-EOF
+EXIT;"| ${sqlcl} -s ${dburl}
 )
-
-# E:\Oracle\sqlcl\bin
-# sqlcl=/c/WinApp/oracle/sqlcl/bin/sql
-sqlcl=/e/Oracle/sqlcl/bin/sql
-dburl=david/alexgo12@192.168.1.2:1521/XE
-echo "$sqlcl_script" | ${sqlcl} -s ${dburl}
+echo "$sqlcl_script" #| /e/Python/Python39/python -m json.tool
