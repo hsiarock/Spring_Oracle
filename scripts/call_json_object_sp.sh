@@ -14,7 +14,7 @@ BEGIN
   --DMBS_OUTPUT.ENABLE(buffer_size => NULL);
   LIST_HOUSE_JSON;
   
-  DBMS_OUTPUT.PUT_LINE('Count: ' || v_count);
+  --DBMS_OUTPUT.PUT_LINE('Count: ' || v_count);
 
 EXCEPTION
   -- Handle potential exceptions
