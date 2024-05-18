@@ -1,0 +1,75 @@
+https://docs.oracle.com/en/database/oracle/oracle-database/19/sqlrf/JSON_TABLE.html
+
+The JSON_TABLE function in Oracle PL/SQL allows you to extract data from a JSON document and 
+display it in a tabular format. Introduced in Oracle Database 12c Release 2, 
+this function is used to convert JSON data into relational data for easy analysis1. 
+
+Here’s how you can use it:
+
+Purpose of JSON_TABLE:
+
+The JSON_TABLE function projects specific JSON data into columns of various SQL data types.
+It maps parts of a JSON document into the rows and columns of a new, 
+virtual table (which you can think of as an inline view).
+You can then insert this virtual table into an existing database table or query it using SQL, 
+such as in a join expression2.
+
+Basic syntax
+
+JSON_TABLE(
+    expression, -- SQL expression (context item)
+    '$.path.to.json.data[*]' -- JSON row path expression
+    COLUMNS (
+        column1 datatype PATH '$.json.path1',
+        column2 datatype PATH '$.json.path2',
+        ...
+    )
+)
+
+    - The first argument (expression) can be a table or view column value, a PL/SQL variable, 
+      or a bind variable with proper casting. It serves as the context item for evaluating 
+      the row path expression.
+
+    - The second argument is the JSON row path expression, which specifies 
+      the location of the JSON data you want to extract.
+
+    - The COLUMNS clause defines the columns of the virtual table to be created based on 
+      the specified column path expressions.
+
+Example: Suppose you have a JSON document like this:
+
+JSON
+{
+    "employees": [
+        {
+            "id": 101,
+            "name": "Alice",
+            "department": "HR"
+        },
+        {
+            "id": 102,
+            "name": "Bob",
+            "department": "Engineering"
+        }
+    ]
+}
+
+You can use JSON_TABLE to extract employee data:
+
+SELECT emp.id, emp.name, emp.department
+FROM employees,
+     JSON_TABLE(
+         employees,
+         '$.employees[*]'
+         COLUMNS (
+             id NUMBER PATH '$.id',
+             name VARCHAR2(50) PATH '$.name',
+             department VARCHAR2(50) PATH '$.department'
+         )
+     ) emp;
+
+This query creates a virtual table (emp) with columns id, name, and department, 
+mapping the JSON data to relational rows and columns3.
+Remember that JSON_TABLE provides a powerful way to work with JSON data 
+in a structured manner within your SQL queries. 
+
